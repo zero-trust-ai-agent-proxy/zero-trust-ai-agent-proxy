@@ -1,0 +1,23 @@
+name: Formal
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  tlc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Download TLC
+        run: |
+          curl -fsSL -o tla2tools.jar https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar
+          echo "ab4694601923fd5ac06452abbf847c366a5054a3d739552085edd6ed986c29ec  tla2tools.jar" | sha256sum -c -
+      - run: bash scripts/tlc.sh
+        env:
+          TLA2TOOLS_JAR: ${{ github.workspace }}/tla2tools.jar

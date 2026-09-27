@@ -1,0 +1,1 @@
+{"concurrency": 1, "delay_profile_ms": 0, "direct_ms": 3.1962000066414475, "direct_status": 200, "mode": "python_mtls_0ms_c1", "overhead_ms": 6.12939998973161, "timestamp_utc": "2026-09-26T16:04:40.974932Z", "trial": 188, "proxy_ms": 9.325599996373057, "proxy_status": 200}

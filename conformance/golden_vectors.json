@@ -1,0 +1,365 @@
+{
+  "ref_version": "ref-v1",
+  "tolerance": 1e-09,
+  "wilson": [
+    {
+      "k": 100,
+      "n": 100,
+      "low": 0.9630065017930143,
+      "high": 1.0
+    },
+    {
+      "k": 0,
+      "n": 100,
+      "low": 0.0,
+      "high": 0.03699349820698568
+    },
+    {
+      "k": 500,
+      "n": 500,
+      "low": 0.9923756595384479,
+      "high": 1.0
+    },
+    {
+      "k": 0,
+      "n": 500,
+      "low": 0.0,
+      "high": 0.007624340461552241
+    },
+    {
+      "k": 95,
+      "n": 100,
+      "low": 0.8882495307680808,
+      "high": 0.9784563208456318
+    },
+    {
+      "k": 1,
+      "n": 3,
+      "low": 0.061491944720396215,
+      "high": 0.7923403991979523
+    },
+    {
+      "k": 30,
+      "n": 30,
+      "low": 0.8864866068260312,
+      "high": 1.0
+    },
+    {
+      "k": 7,
+      "n": 40,
+      "low": 0.0874541374603592,
+      "high": 0.31949990331787714
+    }
+  ],
+  "quantile": [
+    {
+      "values": [
+        3.1,
+        9.7,
+        1.2,
+        8.8,
+        4.4,
+        15.0,
+        2.2,
+        7.3,
+        6.1,
+        5.5,
+        12.9
+      ],
+      "q": 0.0,
+      "value": 1.2
+    },
+    {
+      "values": [
+        3.1,
+        9.7,
+        1.2,
+        8.8,
+        4.4,
+        15.0,
+        2.2,
+        7.3,
+        6.1,
+        5.5,
+        12.9
+      ],
+      "q": 0.5,
+      "value": 6.1
+    },
+    {
+      "values": [
+        3.1,
+        9.7,
+        1.2,
+        8.8,
+        4.4,
+        15.0,
+        2.2,
+        7.3,
+        6.1,
+        5.5,
+        12.9
+      ],
+      "q": 0.95,
+      "value": 13.95
+    },
+    {
+      "values": [
+        3.1,
+        9.7,
+        1.2,
+        8.8,
+        4.4,
+        15.0,
+        2.2,
+        7.3,
+        6.1,
+        5.5,
+        12.9
+      ],
+      "q": 0.99,
+      "value": 14.790000000000001
+    },
+    {
+      "values": [
+        3.1,
+        9.7,
+        1.2,
+        8.8,
+        4.4,
+        15.0,
+        2.2,
+        7.3,
+        6.1,
+        5.5,
+        12.9
+      ],
+      "q": 1.0,
+      "value": 15.0
+    }
+  ],
+  "mean_t_ci": {
+    "values": [
+      194.28,
+      193.92,
+      196.23,
+      199.37,
+      181.9,
+      194.57,
+      191.87
+    ],
+    "point": 193.16285714285712,
+    "low": 188.09362530328076,
+    "high": 198.23208898243348
+  },
+  "bootstrap_quantile_ci": {
+    "values": [
+      3.1,
+      9.7,
+      1.2,
+      8.8,
+      4.4,
+      15.0,
+      2.2,
+      7.3,
+      6.1,
+      5.5,
+      12.9
+    ],
+    "q": 0.95,
+    "resamples": 500,
+    "seed": 7,
+    "point": 13.95,
+    "low": 8.6425,
+    "high": 15.0
+  },
+  "trust": [
+    {
+      "name": "cold_all_benign_10",
+      "outcomes": [
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign"
+      ],
+      "score_now": 0.7224672001371106,
+      "score_after_2h": 0.6520266481237423,
+      "components": {
+        "n": 10.0,
+        "wilson_lb": 0.7224672001371106,
+        "dirichlet_benign": 0.7857142857142857,
+        "ewma": 0.9015627978296387
+      }
+    },
+    {
+      "name": "warm_benign_40",
+      "outcomes": [
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign"
+      ],
+      "score_now": 0.9236223071262294,
+      "score_after_2h": 0.833569132181422,
+      "components": {
+        "n": 40.0,
+        "wilson_lb": 0.9123783988027134,
+        "dirichlet_benign": 0.9318181818181818,
+        "ewma": 0.9992488493750544
+      }
+    },
+    {
+      "name": "mixed_50",
+      "outcomes": [
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "benign",
+        "benign",
+        "benign",
+        "suspicious",
+        "malicious",
+        "unknown"
+      ],
+      "score_now": 0.49126035868652146,
+      "score_after_2h": 0.4433624737145856,
+      "components": {
+        "n": 50.0,
+        "wilson_lb": 0.5833487630404344,
+        "dirichlet_benign": 0.6851851851851852,
+        "ewma": 0.6273750489819268
+      }
+    },
+    {
+      "name": "attacker_35",
+      "outcomes": [
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "benign",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious",
+        "malicious"
+      ],
+      "score_now": 0.191104838593358,
+      "score_after_2h": 0.1724721168305056,
+      "components": {
+        "n": 35.0,
+        "wilson_lb": 0.40857411143974914,
+        "dirichlet_benign": 0.5384615384615384,
+        "ewma": 0.08566131481594243
+      }
+    }
+  ]
+}

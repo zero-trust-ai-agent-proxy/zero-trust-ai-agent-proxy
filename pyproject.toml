@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "zero-trust-ai-agent-proxy"
+version = "0.1.0"
+description = "Zero Trust AI Agent Proxy: a zero-trust AI proxy for tool-using agents"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+authors = [{ name = "Parag Sawant" }]
+keywords = ["ai-security", "zero-trust", "spiffe", "dlp", "agents"]
+classifiers = ["Programming Language :: Python :: 3.12", "Topic :: Security", "License :: OSI Approved :: Apache Software License"]
+dependencies = [
+  "cryptography>=50.0.0; sys_platform != 'win32' or platform_machine != 'ARM64'",
+  "cryptography==46.0.3; sys_platform == 'win32' and platform_machine == 'ARM64'",
+  "httpx>=0.27",
+  "starlette>=0.40",
+  "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "pytest-cov>=5.0", "hypothesis>=6.112", "ruff>=0.8", "mypy>=1.13", "types-jsonschema>=4.23", "bandit>=1.7", "pip-audit>=2.7"]
+
+[project.urls]
+Homepage = "https://github.com/zero-trust-ai-agent-proxy/zero-trust-ai-agent-proxy"
+Issues = "https://github.com/zero-trust-ai-agent-proxy/zero-trust-ai-agent-proxy/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/zero_trust_ai_agent_proxy"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["src/zero_trust_ai_agent_proxy/stats.py", "src/zero_trust_ai_agent_proxy/trust.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S311", "S501", "S603", "S607", "S104", "E501"]
+"bench/**" = ["S101", "S311", "S501", "S603", "S607", "S104", "E501", "T201"]
+"scripts/**" = ["T201"]
+"src/zero_trust_ai_agent_proxy/stats.py" = ["S311", "E231", "E501", "RUF022"]
+"src/zero_trust_ai_agent_proxy/trust.py" = ["E501"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+files = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["integration: needs external services (set RUN_INTEGRATION_TESTS=1)"]
+
+[tool.coverage.run]
+branch = true
+source = ["zero_trust_ai_agent_proxy"]
+omit = ["src/zero_trust_ai_agent_proxy/stats.py", "src/zero_trust_ai_agent_proxy/trust.py", "src/zero_trust_ai_agent_proxy/asgi.py"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if __name__ == .__main__.:", "raise NotImplementedError"]

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="zero-trust-ai-agent-proxy">
+  <defs>
+    <linearGradient id="g-zero-trust-ai-agent-proxy" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4F8DF5"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g-zero-trust-ai-agent-proxy)"/>
+  <g>
+      <circle cx="104" cy="256" r="30" stroke="#fff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="408" cy="256" r="30" stroke="#fff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M134 256 H186 M326 256 H378" stroke="#fff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M256 150 L322 176 V248 C322 300 294 334 256 352 C218 334 190 300 190 248 V176 Z" stroke="#fff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M232 250 L250 268 L284 228" stroke="#fff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+</svg>

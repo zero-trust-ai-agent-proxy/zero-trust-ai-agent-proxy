@@ -1,0 +1,1 @@
+{"delay_profile_ms": 0, "direct_ms": 2.9145999578759074, "direct_status": 200, "mode": "envoy_mtls_ext_authz_0ms", "overhead_ms": 7.433100079651922, "timestamp_utc": "2026-09-26T16:08:00.645557Z", "trial": 82, "proxy_ms": 10.34770003752783, "proxy_status": 200}

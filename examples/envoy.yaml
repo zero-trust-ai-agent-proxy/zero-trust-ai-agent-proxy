@@ -1,0 +1,70 @@
+static_resources:
+  listeners:
+    - name: listener_http
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 10000
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local
+                      domains: ["*"]
+                      routes:
+                        - match: {prefix: "/"}
+                          route: {cluster: mock_tool}
+                http_filters:
+                  - name: envoy.filters.http.ext_authz
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                      transport_api_version: V3
+                      with_request_body:
+                        max_request_bytes: 8192
+                        allow_partial_message: true
+                      http_service:
+                        server_uri:
+                          uri: http://agent-proxy:18200
+                          cluster: agent_proxy_authz
+                          timeout: 2s
+                        path_prefix: /envoy/authz
+                        authorization_request:
+                          allowed_headers:
+                            patterns:
+                              - exact: x-agent-tool
+                              - exact: x-agent-url
+                              - exact: x-agent-origin
+                              - exact: x-agent-context
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+  clusters:
+    - name: agent_proxy_authz
+      connect_timeout: 1s
+      type: STRICT_DNS
+      load_assignment:
+        cluster_name: agent_proxy_authz
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: agent-proxy
+                      port_value: 18200
+    - name: mock_tool
+      connect_timeout: 1s
+      type: STRICT_DNS
+      load_assignment:
+        cluster_name: mock_tool
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: mock-tool
+                      port_value: 18203

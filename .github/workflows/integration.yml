@@ -1,0 +1,26 @@
+name: Docker integration
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --no-compile --no-cache-dir -q -e ".[dev]"
+      - run: python -m pip install --no-compile --no-cache-dir -q "zero-trust-agent-benchmark @ git+https://github.com/zero-trust-agent-benchmark/zero-trust-agent-benchmark@v0.1.0"
+      - name: Pull integration images
+        run: |
+          docker pull envoyproxy/envoy:v1.36.2
+          docker pull openpolicyagent/opa:1.10.1-static
+          docker pull ghcr.io/spiffe/spire-server:1.13.3
+      - run: python -m pytest -q tests/test_integration.py
+        env:
+          RUN_INTEGRATION_TESTS: '1'

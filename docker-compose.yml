@@ -1,0 +1,39 @@
+services:
+  agent-proxy:
+    image: python:3.12-slim
+    working_dir: /workspace
+    command: >
+      sh -c "python -m pip install --no-cache-dir -q -e .
+      && python -m uvicorn zero_trust_ai_agent_proxy.asgi:app --host 0.0.0.0 --port 18200"
+    volumes:
+      - .:/workspace:ro
+    ports:
+      - "18200:18200"
+
+  mock-tool:
+    image: python:3.12-slim
+    working_dir: /workspace
+    command: >
+      sh -c "python -m pip install --no-cache-dir -q -e .
+      && python -m uvicorn zero_trust_ai_agent_proxy.mock_tool:app --host 0.0.0.0 --port 18203"
+    volumes:
+      - .:/workspace:ro
+
+  envoy:
+    image: envoyproxy/envoy:v1.36.2
+    command: ["envoy", "-c", "/config/envoy.yaml"]
+    depends_on:
+      - agent-proxy
+      - mock-tool
+    volumes:
+      - ./examples/envoy.yaml:/config/envoy.yaml:ro
+    ports:
+      - "18202:10000"
+
+  opa:
+    image: openpolicyagent/opa:1.10.1-static
+    command: ["run", "--server", "--addr", "0.0.0.0:8181", "/policy/policy.rego"]
+    volumes:
+      - ./examples/policy.rego:/policy/policy.rego:ro
+    ports:
+      - "18201:8181"

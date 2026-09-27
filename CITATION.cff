@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Zero Trust AI Agent Proxy"
+type: software
+authors:
+  - family-names: Sawant
+    given-names: Parag
+license: Apache-2.0
+version: 0.1.0
+repository-code: "https://github.com/zero-trust-ai-agent-proxy/zero-trust-ai-agent-proxy"
+date-released: "2026-09-26"

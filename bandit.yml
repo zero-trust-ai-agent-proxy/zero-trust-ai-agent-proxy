@@ -1,0 +1,3 @@
+# B311 is a false positive for stats.bootstrap_quantile_ci: it uses deterministic
+# sampling for confidence intervals, not cryptographic randomness.
+skips: [B101, B311]
