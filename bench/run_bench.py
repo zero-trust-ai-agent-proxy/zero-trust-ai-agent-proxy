@@ -14,7 +14,7 @@ import sys
 import time
 from collections.abc import Callable
 from datetime import UTC, datetime
-from importlib import metadata
+from importlib import metadata, resources
 from pathlib import Path
 from typing import Any
 
@@ -32,7 +32,10 @@ ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT / ".bench-work"
 WORKERS = (1, 2, 4, 8)
 CONCURRENCIES = (1, 8, 32, 128)
-OHA_IMAGE = "ghcr.io/hatoo/oha:latest"
+OHA_IMAGE = (
+    "ghcr.io/hatoo/oha:1.16.0"
+    "@sha256:3ec3dbf549ea197793482d47a6324797411406bbf438c2fe8b91f244ec641a2f"
+)
 
 
 def _request(tool: str, args: dict[str, Any]) -> dict[str, Any]:
@@ -452,8 +455,9 @@ def _socket_bench() -> tuple[dict[str, Any], list[dict[str, Any]]]:
     for workers in WORKERS:
         with _socket_services(workers=workers) as (files, _mock_port, pep_ports):
             cert_dir = files["client_cert"].parent
-            direct_url = f"http://host.docker.internal:{_mock_port}/tool"
-            pep_urls = [f"https://host.docker.internal:{port}/tool" for port in pep_ports]
+            load_host = _load_generator_host()
+            direct_url = f"http://{load_host}:{_mock_port}/tool"
+            pep_urls = [f"https://{load_host}:{port}/tool" for port in pep_ports]
             worker_key = str(workers)
             rps_matrix[worker_key] = {}
             for concurrency in CONCURRENCIES:
@@ -487,7 +491,7 @@ def _socket_bench() -> tuple[dict[str, Any], list[dict[str, Any]]]:
         "concurrency_sweep": list(CONCURRENCIES),
         "load_seconds": seconds,
         "load_generator": "oha",
-        "load_generator_native": "native oha" if shutil.which("oha") else "oha container to host",
+        "load_generator_native": _load_generator_mode(),
         "harness_ceiling_ok": h2_ceiling_ok,
     }, rows
 
@@ -748,6 +752,22 @@ def _oha_available() -> str | None:
     return None
 
 
+def _load_generator_host() -> str:
+    # Servers bind to 127.0.0.1. Docker Desktop forwards host.docker.internal to the host's
+    # loopback, but on Linux the container must share the host network to reach it.
+    if shutil.which("oha") or sys.platform.startswith("linux"):
+        return "127.0.0.1"
+    return "host.docker.internal"
+
+
+def _load_generator_mode() -> str:
+    if shutil.which("oha"):
+        return "native oha"
+    if sys.platform.startswith("linux"):
+        return "oha container on host network"
+    return "oha container to host"
+
+
 def _write_urls(name: str, urls: list[str]) -> tuple[Path, str]:
     path = WORK / f"{name}.urls"
     _write(path, "\n".join(urls) + "\n")
@@ -760,6 +780,11 @@ def _oha_result(raw: dict[str, Any], *, seconds: float) -> dict[str, Any]:
     status_counts = {str(k): int(v) for k, v in dict(raw.get("statusCodeDistribution", {})).items()}
     count = sum(status_counts.values())
     errors = sum(int(v) for v in dict(raw.get("errorDistribution", {})).values())
+    if count == 0 or latency.get("p50") is None:
+        raise RuntimeError(
+            "oha recorded no successful responses; errors: "
+            f"{dict(raw.get('errorDistribution', {}))}"
+        )
     p50 = float(latency.get("p50", 0.0))
     p95 = float(latency.get("p95", 0.0))
     p99 = float(latency.get("p99", 0.0))
@@ -822,7 +847,9 @@ def _run_oha(
         )
     if runner == "docker":
         cmd = ["docker", "run", "--rm"]
-        if network is None and sys.platform != "win32":
+        if network is None and sys.platform.startswith("linux"):
+            cmd.extend(["--network", "host"])
+        elif network is None and sys.platform != "win32":
             cmd.extend(["--add-host", "host.docker.internal:host-gateway"])
         if network is not None:
             cmd.extend(["--network", network])
@@ -1121,6 +1148,9 @@ allow if {
             proc.kill()
 
 
+TEST_SPLIT_SHA256 = "d065bab9bed145490579cd7add6a574c6e23c21c0ea4525dc1c14b0fc15acd2b"
+
+
 def _benchmark() -> dict[str, Any]:
     benchmark_root = Path(
         os.environ.get("BENCHMARK_PATH", str(ROOT.parent / "zero-trust-agent-benchmark"))
@@ -1131,10 +1161,21 @@ def _benchmark() -> dict[str, Any]:
     from zero_trust_agent_benchmark import evaluate, load_traces
     from zero_trust_agent_benchmark.profile import profile
 
-    test_path = benchmark_root / "traces" / "test.jsonl"
-    data = evaluate(BenchmarkDefense(), load_traces("test", benchmark_root / "traces")).to_dict()
+    with contextlib.ExitStack() as stack:
+        traces_dir = benchmark_root / "traces"
+        if not (traces_dir / "test.jsonl").exists():
+            # Without a sibling checkout (as on CI), use the traces shipped in the installed package.
+            packaged = resources.files("zero_trust_agent_benchmark").joinpath("_data", "traces")
+            traces_dir = stack.enter_context(resources.as_file(packaged))
+        test_path = traces_dir / "test.jsonl"
+        test_sha256 = hashlib.sha256(test_path.read_bytes()).hexdigest()
+        if test_sha256 != TEST_SPLIT_SHA256:
+            raise RuntimeError(
+                f"benchmark test split sha256 {test_sha256} does not match {TEST_SPLIT_SHA256}"
+            )
+        data = evaluate(BenchmarkDefense(), load_traces("test", traces_dir)).to_dict()
     data["dataset_version"] = str(profile().get("dataset_version", "unknown"))
-    data["test_jsonl_sha256"] = hashlib.sha256(test_path.read_bytes()).hexdigest()
+    data["test_jsonl_sha256"] = test_sha256
     return data
 
 
