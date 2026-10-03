@@ -21,7 +21,7 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install --no-compile --no-cache-dir -q build
       - run: python -m build
-      - uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
+      - uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
       - uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
         with:
           subject-path: 'dist/*'
