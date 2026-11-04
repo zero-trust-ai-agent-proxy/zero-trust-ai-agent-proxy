@@ -20,7 +20,7 @@ services:
       - .:/workspace:ro
 
   envoy:
-    image: envoyproxy/envoy:v1.36.2
+    image: envoyproxy/envoy:v1.40.2
     command: ["envoy", "-c", "/config/envoy.yaml"]
     depends_on:
       - agent-proxy
@@ -31,7 +31,7 @@ services:
       - "18202:10000"
 
   opa:
-    image: openpolicyagent/opa:1.10.1-static
+    image: openpolicyagent/opa:1.22.0-static
     command: ["run", "--server", "--addr", "0.0.0.0:8181", "/policy/policy.rego"]
     volumes:
       - ./examples/policy.rego:/policy/policy.rego:ro

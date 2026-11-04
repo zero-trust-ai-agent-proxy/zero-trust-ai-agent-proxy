@@ -1,6 +1,6 @@
 python=3.15
 python-container=python:3.15-slim
-opa=openpolicyagent/opa:1.10.1-static
-envoy=envoyproxy/envoy:v1.36.2
-spire-server=ghcr.io/spiffe/spire-server:1.13.3
-spire-agent=ghcr.io/spiffe/spire-agent:1.13.3
+opa=openpolicyagent/opa:1.22.0-static
+envoy=envoyproxy/envoy:v1.40.2
+spire-server=ghcr.io/spiffe/spire-server:1.15.5
+spire-agent=ghcr.io/spiffe/spire-agent:1.15.5

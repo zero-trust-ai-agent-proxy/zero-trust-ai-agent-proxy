@@ -993,7 +993,7 @@ def _envoy_bench() -> tuple[dict[str, Any], list[dict[str, Any]]]:
         f"{config.parent.resolve()}:/config:ro",
         "-v",
         f"{files['ca'].parent.resolve()}:/certs:ro",
-        "envoyproxy/envoy:v1.36.2",
+        "envoyproxy/envoy:v1.40.2",
         "envoy",
         "-c",
         "/config/envoy.yaml",
@@ -1113,7 +1113,7 @@ allow if {
             f"{port}:8181",
             "-v",
             f"{policy.resolve()}:/policy.rego:ro",
-            "openpolicyagent/opa:1.10.1-static",
+            "openpolicyagent/opa:1.22.0-static",
             "run",
             "--server",
             "--addr",
@@ -1224,10 +1224,10 @@ def _write_artifacts(out: Path, rows: list[dict[str, Any]], summary: dict[str, A
         "packages": {},
         "docker_images": [
             "python:3.15-slim",
-            "openpolicyagent/opa:1.10.1-static",
-            "envoyproxy/envoy:v1.36.2",
-            "ghcr.io/spiffe/spire-server:1.13.3",
-            "ghcr.io/spiffe/spire-agent:1.13.3",
+            "openpolicyagent/opa:1.22.0-static",
+            "envoyproxy/envoy:v1.40.2",
+            "ghcr.io/spiffe/spire-server:1.15.5",
+            "ghcr.io/spiffe/spire-agent:1.15.5",
         ],
     }
     for name in ["zero_trust_ai_agent_proxy", "cryptography", "httpx", "starlette", "uvicorn"]:
