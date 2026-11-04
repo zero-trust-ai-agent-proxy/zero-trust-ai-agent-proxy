@@ -30,6 +30,7 @@ PHONE_RE = re.compile(r"\b\+?1?[ -.]?\(?\d{3}\)?[ -.]?\d{3}[ -.]?\d{4}\b")
 CARD_RE = re.compile(r"\b(?:\d[ -]*?){13,19}\b")
 HEX_RE = re.compile(r"\b(?:[0-9a-fA-F]{2}){12,}\b")
 B64_RE = re.compile(r"\b[A-Za-z0-9+/_-]{24,}={0,2}\b")
+_URLSAFE_TO_STANDARD = str.maketrans("-_", "+/")
 
 
 def _luhn(candidate: str) -> bool:
@@ -57,12 +58,12 @@ def _decode_candidates(text: str) -> set[str]:
             for match in B64_RE.findall(item):
                 padded = match + "=" * ((4 - len(match) % 4) % 4)
                 try:
-                    decoder = (
-                        base64.urlsafe_b64decode
-                        if any(ch in match for ch in "-_")
-                        else base64.b64decode
+                    # Map URL-safe characters ourselves so mixed-alphabet input decodes the
+                    # same way on every Python version (3.15 deprecates this in urlsafe_b64decode).
+                    standard = padded.translate(_URLSAFE_TO_STANDARD)
+                    decoded = base64.b64decode(standard.encode("ascii")).decode(
+                        "utf-8", errors="ignore"
                     )
-                    decoded = decoder(padded.encode("ascii")).decode("utf-8", errors="ignore")
                 except ValueError:
                     continue
                 if decoded and decoded not in seen:

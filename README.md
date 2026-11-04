@@ -65,6 +65,8 @@ The attestation check is simulated. It uses signed quote-like data and Platform 
 
 ## Quickstart
 
+Requires Python 3.12 or newer. CI, Docker Compose, and the benchmark containers use Python 3.15. The TLA+ model check (`scripts/tlc.sh`) uses Java 25 LTS with TLA+ tools v1.7.4.
+
 Linux/macOS:
 
 ```bash

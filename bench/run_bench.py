@@ -937,7 +937,7 @@ def _docker_server(
     for key, value in (env or {}).items():
         cmd.extend(["-e", f"{key}={value}"])
     cmd.extend(
-        ["python:3.12-slim", "bash", "-lc", _server_container_command(app, port, workers, extra)]
+        ["python:3.15-slim", "bash", "-lc", _server_container_command(app, port, workers, extra)]
     )
     return subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True, check=False)
 
@@ -1223,7 +1223,7 @@ def _write_artifacts(out: Path, rows: list[dict[str, Any]], summary: dict[str, A
         "git_sha": _git_sha(),
         "packages": {},
         "docker_images": [
-            "python:3.12-slim",
+            "python:3.15-slim",
             "openpolicyagent/opa:1.10.1-static",
             "envoyproxy/envoy:v1.36.2",
             "ghcr.io/spiffe/spire-server:1.13.3",

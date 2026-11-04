@@ -1,6 +1,6 @@
 services:
   agent-proxy:
-    image: python:3.12-slim
+    image: python:3.15-slim
     working_dir: /workspace
     command: >
       sh -c "python -m pip install --no-cache-dir -q -e .
@@ -11,7 +11,7 @@ services:
       - "18200:18200"
 
   mock-tool:
-    image: python:3.12-slim
+    image: python:3.15-slim
     working_dir: /workspace
     command: >
       sh -c "python -m pip install --no-cache-dir -q -e .

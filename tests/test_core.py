@@ -107,6 +107,15 @@ def test_dlp_matches_issued_secret_values() -> None:
     assert scanner.scan({"token_ref": "secret://deploy/issued-secret-value-12345"}) == []
 
 
+def test_dlp_decodes_mixed_alphabet_base64() -> None:
+    secret = "issued~secret??value>>12345"
+    encoded = base64.b64encode(secret.encode()).decode()
+    mixed = encoded.replace("+", "-")
+    assert "-" in mixed and "/" in mixed
+    findings = DLPScanner(issued_secrets=(secret,)).scan({"body": mixed})
+    assert any(finding.kind == "issued_secret" for finding in findings)
+
+
 @given(st.sampled_from(["raw", "base64", "base64url", "hex", "rot13", "reverse"]))
 def test_dlp_matches_issued_secret_obfuscation(encoding: str) -> None:
     secret = "issued-secret-value-12345"
