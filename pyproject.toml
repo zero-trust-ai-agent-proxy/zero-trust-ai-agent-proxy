@@ -14,8 +14,7 @@ authors = [{ name = "Parag Sawant" }]
 keywords = ["ai-security", "zero-trust", "spiffe", "dlp", "agents"]
 classifiers = ["Programming Language :: Python :: 3.12", "Programming Language :: Python :: 3.13", "Programming Language :: Python :: 3.14", "Programming Language :: Python :: 3.15", "Topic :: Security", "License :: OSI Approved :: Apache Software License"]
 dependencies = [
-  "cryptography>=50.0.2; sys_platform != 'win32' or platform_machine != 'ARM64'",
-  "cryptography==46.0.3; sys_platform == 'win32' and platform_machine == 'ARM64'",
+  "cryptography>=50.0.2",
   "httpx>=0.28.1",
   "starlette>=1.10",
   "uvicorn>=0.54",

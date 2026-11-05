@@ -67,6 +67,8 @@ The attestation check is simulated. It uses signed quote-like data and Platform 
 
 Requires Python 3.12 or newer. CI, Docker Compose, and the benchmark containers use Python 3.15. The TLA+ model check (`scripts/tlc.sh`) uses Java 25 LTS with TLA+ tools v1.7.4.
 
+On Windows on Arm, `cryptography` has not published `win_arm64` wheels since 46.0.4, and earlier versions have known vulnerabilities. Use an x64 Python, which installs the `win_amd64` wheel under emulation, or build `cryptography` from source with Rust and an ARM64 OpenSSL (see the [cryptography installation docs](https://cryptography.io/en/latest/installation/)).
+
 Linux/macOS:
 
 ```bash
