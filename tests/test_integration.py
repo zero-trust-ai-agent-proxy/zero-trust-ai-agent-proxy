@@ -38,6 +38,21 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _container_user_args() -> list[str]:
+    # pytest creates tmp_path with mode 0700 for the host user. Envoy (uid 101) and SPIRE
+    # (uid 1000) cannot read or write those bind mounts as their default users on Linux.
+    if sys.platform == "win32":
+        return []
+    return ["--user", f"{os.getuid()}:{os.getgid()}"]
+
+
+def _log_tail(path: Path, lines: int = 40) -> str:
+    if not path.exists():
+        return "<no container output>"
+    tail = path.read_text(encoding="utf-8", errors="replace").splitlines()[-lines:]
+    return "\n".join(tail) or "<no container output>"
+
+
 async def _wait_url(
     url: str, *, cert: tuple[str, str] | None = None, timeout_seconds: float = 90
 ) -> None:
@@ -192,9 +207,11 @@ def test_envoy_mtls_ext_authz_allows_and_denies(tmp_path: Path) -> None:
     _, files = _certs(tmp_path)
     _envoy_config(tmp_path, authz_port, upstream_port)
     container = f"proxy-it-envoy-{envoy_port}"
+    log_path = tmp_path / "envoy.log"
     with (
         _host_uvicorn("zero_trust_ai_agent_proxy.mock_tool:app", upstream_port),
         _host_uvicorn("zero_trust_ai_agent_proxy.asgi:app", authz_port),
+        log_path.open("w", encoding="utf-8") as log,
     ):
         asyncio.run(_wait_url(f"http://127.0.0.1:{upstream_port}/healthz"))
         asyncio.run(_wait_url(f"http://127.0.0.1:{authz_port}/healthz"))
@@ -208,6 +225,7 @@ def test_envoy_mtls_ext_authz_allows_and_denies(tmp_path: Path) -> None:
                 "--rm",
                 "--name",
                 container,
+                *_container_user_args(),
                 *(
                     ["--add-host", "host.docker.internal:host-gateway"]
                     if sys.platform != "win32"
@@ -224,14 +242,18 @@ def test_envoy_mtls_ext_authz_allows_and_denies(tmp_path: Path) -> None:
                 "-c",
                 "/config/envoy.yaml",
             ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=log,
+            stderr=subprocess.STDOUT,
             text=True,
         )
         try:
             cert = (str(files["client_cert"]), str(files["client_key"]))
             url = f"https://127.0.0.1:{envoy_port}/tool"
-            asyncio.run(_wait_url(url, cert=cert))
+            try:
+                asyncio.run(_wait_url(url, cert=cert))
+            except AssertionError as exc:
+                log.flush()
+                raise AssertionError(f"{exc}\nEnvoy output:\n{_log_tail(log_path)}") from exc
             with httpx.Client(verify=False, cert=cert, timeout=10.0, trust_env=False) as client:
                 allowed = client.post(
                     url,
@@ -321,40 +343,45 @@ allow if {
 
 def test_spire_server_minted_x509_svid_validates(tmp_path: Path) -> None:
     _need_integration()
+    # Keep SPIRE state in the writable bind mount so the server works as the host user.
+    socket_path = "/out/spire/api.sock"
+    (tmp_path / "spire" / "data").mkdir(parents=True)
     config = tmp_path / "server.conf"
     _write(
         config,
-        """
-server {
+        f"""
+server {{
   bind_address = "0.0.0.0"
   bind_port = "8081"
-  socket_path = "/run/spire/sockets/api.sock"
+  socket_path = "{socket_path}"
   trust_domain = "acme.test"
-  data_dir = "/run/spire/data"
+  data_dir = "/out/spire/data"
   log_level = "ERROR"
-}
-plugins {
-  DataStore "sql" {
-    plugin_data {
+}}
+plugins {{
+  DataStore "sql" {{
+    plugin_data {{
       database_type = "sqlite3"
-      connection_string = "/run/spire/data/datastore.sqlite3"
-    }
-  }
-  KeyManager "disk" {
-    plugin_data {
-      keys_path = "/run/spire/data/keys.json"
-    }
-  }
-  NodeAttestor "join_token" {
-    plugin_data {}
-  }
-}
+      connection_string = "/out/spire/data/datastore.sqlite3"
+    }}
+  }}
+  KeyManager "disk" {{
+    plugin_data {{
+      keys_path = "/out/spire/data/keys.json"
+    }}
+  }}
+  NodeAttestor "join_token" {{
+    plugin_data {{}}
+  }}
+}}
 """,
     )
     container = f"proxy-it-spire-{_free_port()}"
+    log_path = tmp_path / "spire.log"
     subprocess.run(
         ["docker", "rm", "-f", container], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
+    log = log_path.open("w", encoding="utf-8")
     proc = subprocess.Popen(
         [
             "docker",
@@ -362,6 +389,7 @@ plugins {
             "--rm",
             "--name",
             container,
+            *_container_user_args(),
             "-v",
             f"{tmp_path.resolve()}:/config:ro",
             "-v",
@@ -370,8 +398,8 @@ plugins {
             "-config",
             "/config/server.conf",
         ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=log,
+        stderr=subprocess.STDOUT,
         text=True,
     )
     try:
@@ -385,7 +413,7 @@ plugins {
                     "/opt/spire/bin/spire-server",
                     "healthcheck",
                     "-socketPath",
-                    "/run/spire/sockets/api.sock",
+                    socket_path,
                 ],
                 check=False,
                 stdout=subprocess.DEVNULL,
@@ -395,7 +423,10 @@ plugins {
                 break
             time.sleep(0.5)
         else:
-            raise AssertionError("SPIRE server did not become healthy")
+            log.flush()
+            raise AssertionError(
+                f"SPIRE server did not become healthy\nSPIRE output:\n{_log_tail(log_path)}"
+            )
         subprocess.run(
             [
                 "docker",
@@ -405,7 +436,7 @@ plugins {
                 "x509",
                 "mint",
                 "-socketPath",
-                "/run/spire/sockets/api.sock",
+                socket_path,
                 "-spiffeID",
                 "spiffe://acme.test/workload/integration",
                 "-write",
@@ -423,6 +454,7 @@ plugins {
             ["docker", "rm", "-f", container], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
         proc.terminate()
+        log.close()
 
 
 def test_simulated_tpm_integration_cache() -> None:
